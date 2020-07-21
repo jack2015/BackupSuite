@@ -228,13 +228,17 @@ else
 	MODEL=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 2`
 	SHOWNAME=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 3`
 	FOLDER="`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 4`"
-	EXTR1="`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 5`/$DATE"
+	EXTR1="/fullbackup_$SEARCH/$DATE"
 	EXTR2="`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 6`"
 	EXTRA="$MEDIA$EXTR1$EXTR2"
 	if  [ $HARDDISK = 1 ]; then
 		MAINDEST="$MEDIA$EXTR1$FOLDER"
+		mkdir -p "$MAINDEST"
+		log "Created directory  = $MAINDEST"
 	else
 		MAINDEST="$MEDIA$FOLDER"
+		mkdir -p "$MAINDEST"
+		log "Created directory  = $MAINDEST"
 	fi
 	MKUBIFS_ARGS=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 7`
 	UBINIZE_ARGS=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 8`
@@ -344,7 +348,7 @@ fi
 ############################## MAKING KERNELDUMP ##############################
 log $LINE
 $SHOW "message07" 2>&1 | tee -a $LOGFILE			# Create: kerneldump
-if [ $ROOTNAME != "rootfs.tar.bz2" -o $SEARCH = "h9" -o $SEARCH = "h9combo" -o $SEARCH = "i55plus" -o $SEARCH = "h10" ] ; then
+if [ $ROOTNAME != "rootfs.tar.bz2" -o $SEARCH = "h9" -o $SEARCH = "h9combo" -o $SEARCH = "i55plus" -o $SEARCH = "h10" -o $SEARCH = "h0" ] ; then
 	log "Kernel resides on $MTDPLACE" 					# Just for testing purposes
 	$NANDDUMP /dev/$MTDPLACE -qf "$WORKDIR/$KERNELNAME"
 	if [ -f "$WORKDIR/$KERNELNAME" ] ; then
@@ -438,7 +442,7 @@ elif [ $ACTION = "force" ] ; then
 	echo "Rename the file in the folder /vuplus/$SEARCH/noforce.update to /vuplus/$SEARCH/force.update to flash this image"
 fi
 image_version > "$MAINDEST/imageversion"
-if [ $SEARCH = "h9" -o $SEARCH = "h9combo" -o $SEARCH = "i55plus" -o $SEARCH = "h10" ] ; then
+if [ $SEARCH = "h9" -o $SEARCH = "h9combo" -o $SEARCH = "i55plus" -o $SEARCH = "h10" -o $SEARCH = "h0" ] ; then
 	log "Zgemma hisil-3798mv200 found, we need to copy more files for flashing later!"
 	dd if=/dev/mtd0 of=$MAINDEST/fastboot.bin > /dev/null 2>&1
 	dd if=/dev/mtd1 of=$MAINDEST/bootargs.bin > /dev/null 2>&1

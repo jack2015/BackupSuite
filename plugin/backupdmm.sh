@@ -227,13 +227,17 @@ log "Found dm9x0, bz2 mode"
 MODEL=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 2`
 SHOWNAME=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 3`
 FOLDER="`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 4`"
-EXTR1="`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 5`/$DATE"
+EXTR1="/fullbackup_$SEARCH/$DATE"
 EXTR2="`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 6`"
 EXTRA="$MEDIA$EXTR1$EXTR2"
 if  [ $HARDDISK = 1 ]; then
 	MAINDEST="$MEDIA$EXTR1$FOLDER"
+	mkdir -p "$MAINDEST"
+	log "Created directory  = $MAINDEST"
 else
 	MAINDEST="$MEDIA$FOLDER"
+	mkdir -p "$MAINDEST"
+	log "Created directory  = $MAINDEST"
 fi
 MKUBIFS_ARGS=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 7`
 UBINIZE_ARGS=`cat $LOOKUP | grep -w -m1 "$SEARCH" | cut -f 8`
@@ -424,7 +428,7 @@ fi
 dm52x_dm7080_dm820_situation()
 {
 log "Found dm52x,dm7080,dm820, xz mode"
-EXTRA="$MEDIA/fullbackup_dreambox/$DATE"
+EXTRA="$MEDIA/fullbackup_$SEARCH/$DATE"
 MAINDEST="$MEDIA/$SEARCH"
 log "Destination        = $MAINDEST"
 log $LINE
@@ -614,7 +618,7 @@ cleanup_mounts(){
 #
 # Set Backup Location
 #
-EXTRA="$MEDIA/fullbackup_dreambox/$DATE"
+EXTRA="$MEDIA/fullbackup_$SEARCH/$DATE"
 MAINDEST="$MEDIA/$SEARCH"
 SBI="$MEDIA/bi"
 TBI="/tmp/bi"
