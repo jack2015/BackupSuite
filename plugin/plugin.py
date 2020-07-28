@@ -383,6 +383,10 @@ class FlashImageConfig(Screen):
 						backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2")]
 						no_backup_files = [("rootfs.bin"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel_cfe_auto.bin, root_cfe_auto.jffs2"
+				elif brand == "ebox":
+					backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2")]
+					no_backup_files = [("rootfs.bin"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
+					text += "kernel_cfe_auto.bin, root_cfe_auto.jffs2"
 
 				else:
 					if model in ("h7","sf4008","sf5008","et1x000","et13000","spycat4k","spycat4kcombo") or platformm in ("u5pvr","u5","u51","u52","u53","u54","u56","u532","u533","8100s","gfuturesbcmarm","octagonhisil"):
@@ -397,10 +401,6 @@ class FlashImageConfig(Screen):
 						backup_files = [("uImage"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("rootfs.ubi"), ("kernel_auto.bin"), ("kernel.bin")]
 						text += "uImage, rootfs.tar.bz2"
-					elif brand == "ebox":
-						backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2")]
-						no_backup_files = [("rootfs.bin"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
-						text += "kernel_cfe_auto.bin, root_cfe_auto.jffs2"
 					elif platform in ("dags7335","dags7356","dags7362","dags73625"):
 						backup_files = [("oe_kernel.bin"), ("oe_rootfs.bin")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
