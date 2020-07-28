@@ -20,7 +20,7 @@ from Plugins.Plugin import PluginDescriptor
 from Tools.Directories import resolveFilename, SCOPE_LANGUAGE, SCOPE_PLUGINS
 from os import environ
 from enigma import getDesktop, getBoxType, getBoxBrand
-from boxbranding import etMachineBuild
+from boxbranding import getMachineBuild
 
 model = getBoxType()
 brand = getBoxBrand()
