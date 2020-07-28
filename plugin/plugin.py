@@ -389,7 +389,7 @@ class FlashImageConfig(Screen):
 						backup_files = [("kernel.bin"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel.bin, rootfs.tar.bz2"
-					elif if platform in ("zgemmahisi3798mv200","zgemmahisi3716mv430","u55","u41","u42","u43"):
+					elif platform in ("zgemmahisi3798mv200","zgemmahisi3716mv430","u55","u41","u42","u43"):
 						backup_files = [("uImage"), ("rootfs.ubi")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("kernel.bin"), ("rootfs.tar.bz2")]
 						text += "uImage, rootfs.ubi"
