@@ -1,5 +1,5 @@
 #     FULL BACKUP UYILITY FOR ENIGMA2/OPENVISION, SUPPORTS VARIOUS MODELS     #
-#                   MAKES A FULLBACK-UP READY FOR FLASHING.                   #
+#                    MAKES A FULLBACKUP READY FOR FLASHING.                   #
 #                                                                             #
 ###############################################################################
 #
@@ -86,7 +86,7 @@ exit 0
 ############################ DEFINE IMAGE_VERSION #############################
 image_version()
 {
-echo "Back-up = $BACKUPDATE"
+echo "Backup = $BACKUPDATE"
 echo "Version = $IMVER"
 echo "Flashed = $FLASHED"
 echo "Updated = $LASTUPDATE"
@@ -118,7 +118,7 @@ elif [ ! -x "$1" ] ; then
 	big_fail
 fi
 }
-################### BACK-UP MADE AND REPORTING SIZE ETC. ######################
+################### BACKUP MADE AND REPORTING SIZE ETC. #######################
 backup_made()
 {
 {
@@ -133,7 +133,7 @@ if  [ $HARDDISK != 1 ]; then
 fi
 } 2>&1 | tee -a $LOGFILE
 }
-################### BACK-UP MADE AND REPORTING SIZE ETC. ######################
+################### BACKUP MADE AND REPORTING SIZE ETC. ######################
 backup_made_nfi()
 {
 {
@@ -195,7 +195,7 @@ log "*** THIS BACKUP IS CREATED WITH THE BACKUPSUITE PLUGIN ***"
 log "*****  https://github.com/OpenVisionE2/BackupSuite  ******"
 log $LINE
 log "Plugin version     = "`cat /var/lib/opkg/info/enigma2-plugin-extensions-backupsuite.control | grep "Version: " | cut -d "+" -f 2- | cut -d "-" -f1`
-log "Back-up media      = $MEDIA"
+log "Backup media      = $MEDIA"
 df -h "$MEDIA"  >> $LOGFILE
 log $LINE
 image_version >> $LOGFILE
@@ -213,12 +213,21 @@ if [ -f /etc/modules-load.d/dreambox-dvb-modules-dm*.conf ] || [ -f /etc/modules
 		log "Thanks GOD it's Open Vision"
 		SEARCH=$( cat /etc/openvision/model )
 	else
-		log "Not Open Vision, OpenPLi or SatDreamGr maybe?"	
-		SEARCH=$( cat /proc/stb/info/model )
+		echo $RED
+		$SHOW "message01" 2>&1 | tee -a $LOGFILE # No supported receiver found!
+		big_fail
 	fi
 else
 	log "It's not a dreambox! Not compatible with this script."
 	exit 1
+fi
+
+if [ -f /etc/openvision/platfom ] ; then
+	log "Now we know the platform."
+	PLATFORM=$( cat /etc/openvision/platfom )
+else
+	log "Not Open Vision so no platform detection!"
+	PLATFORM=$SEARCH
 fi
 ############################## DM9X0 Situation ##############################
 dm9x0_situation()
@@ -258,7 +267,7 @@ log $LINE
 ############# START TO SHOW SOME INFORMATION ABOUT BRAND & MODEL ##############
 echo -n $PURPLE
 echo -n "$SHOWNAME " | tr  a-z A-Z		# Shows the receiver brand and model
-$SHOW "message02"  			# BACK-UP TOOL FOR MAKING A COMPLETE BACK-UP
+$SHOW "message02"  			# BACKUP TOOL FOR MAKING A COMPLETE BACKUP
 echo $BLUE
 log "RECEIVER = $SHOWNAME "
 log "MKUBIFS_ARGS = $MKUBIFS_ARGS"
@@ -307,7 +316,7 @@ fi
 ############################## MAKING KERNELDUMP ##############################
 log $LINE
 $SHOW "message07" 2>&1 | tee -a $LOGFILE			# Create: kerneldump
-if [ $SEARCH = "dm900" -o $SEARCH = "dm920" ] ; then
+if [ $PLATFORM = "dm4kgen" ] ; then
 	dd if=/dev/mmcblk0p1 of=$WORKDIR/$KERNELNAME
 	log "Kernel resides on /dev/mmcblk0p1" 
 else
@@ -335,7 +344,7 @@ image_version > "$MAINDEST/imageversion"
 if  [ $HARDDISK != 1 ]; then
 	mkdir -p "$EXTRA"
 	echo "Created directory  = $EXTRA" >> $LOGFILE
-	cp -r "$MAINDEST" "$EXTRA" 	#copy the made back-up to images
+	cp -r "$MAINDEST" "$EXTRA" 	#copy the made backup to images
 fi
 if [ -f "$MAINDEST/$ROOTNAME" -a -f "$MAINDEST/$KERNELNAME" ] ; then
 		backup_made
@@ -421,13 +430,13 @@ fi
 ############### END OF PROGRAMM ################
 }
 ############################## DM9X0 Situation ##############################
-if [ $SEARCH = "dm900" ] || [ $SEARCH = "dm920" ] ; then
+if [ $PLATFORM = "dm4kgen" ] ; then
 	dm9x0_situation
 fi
-######################## DM52X,DM7080,DM820 Situation ########################
-dm52x_dm7080_dm820_situation()
+######################## DM520,DM7080,DM820 Situation ########################
+dm520_dm7080_dm820_situation()
 {
-log "Found dm52x,dm7080,dm820, xz mode"
+log "Found dm520,dm7080,dm820, xz mode"
 EXTRA="$MEDIA/fullbackup_$SEARCH/$DATE"
 MAINDEST="$MEDIA/$SEARCH"
 log "Destination        = $MAINDEST"
@@ -435,7 +444,7 @@ log $LINE
 ############# START TO SHOW SOME INFORMATION ABOUT BRAND & MODEL ##############
 echo -n $PURPLE
 echo -n "$SEARCH " | tr  a-z A-Z		# Shows the receiver brand and model
-$SHOW "message02"  			# BACK-UP TOOL FOR MAKING A COMPLETE BACK-UP 
+$SHOW "message02"  			# BACKUP TOOL FOR MAKING A COMPLETE BACKUP 
 echo $BLUE
 log "RECEIVER = $SEARCH "
 echo "$VERSION"
@@ -493,7 +502,7 @@ image_version > "$MAINDEST/imageversion"
 if  [ $HARDDISK != 1 ]; then
 	mkdir -p "$EXTRA"
 	echo "Created directory  = $EXTRA" >> $LOGFILE
-	cp -r "$MAINDEST" "$EXTRA" 	#copy the made back-up to images
+	cp -r "$MAINDEST" "$EXTRA" 	#copy the made backup to images
 fi
 backup_made
 $SHOW "message14" 			# Instructions on how to restore the image.
@@ -574,9 +583,9 @@ if [ "$TARGET" != "XX" ] ; then
 fi
 ############### END OF PROGRAMM ################
 }
-######################## DM52X,DM7080,DM820 Situation ########################
-if [ $SEARCH = "dm520" ] || [ $SEARCH = "dm525" ] || [ $SEARCH = "dm7080" ] || [ $SEARCH = "dm820" ] ; then
-	dm52x_dm7080_dm820_situation
+######################## DM520,DM7080,DM820 Situation ########################
+if [ $PLATFORM = "dm3gen" ] ; then
+	dm520_dm7080_dm820_situation
 fi
 ########################### Old Dreambox Situation ###########################
 old_dreambox_situation()
@@ -590,7 +599,7 @@ echo -n $WHITE
 ############# START TO SHOW SOME INFORMATION ABOUT BRAND & MODEL ##############
 echo -n $PURPLE
 echo -n "$SEARCH " | tr  a-z A-Z		# Shows the receiver brand and model
-$SHOW "message02"  			# BACK-UP TOOL FOR MAKING A COMPLETE BACK-UP 
+$SHOW "message02"  			# BACKUP TOOL FOR MAKING A COMPLETE BACKUP 
 echo $BLUE
 log "RECEIVER = $SEARCH "
 echo "$VERSION"
@@ -889,7 +898,7 @@ echo "--------------------------------------------" >> $LOGFILE
 opkg list-installed >> $LOGFILE
 }
 ########################### Old Dreambox Situation ###########################
-if [ $SEARCH != "dm900" ] && [ $SEARCH != "dm920" ] && [ $SEARCH != "dm520" ] && [ $SEARCH != "dm525" ] && [ $SEARCH != "dm7080" ] && [ $SEARCH != "dm820" ] ; then
+if [ $PLATFORM != "dm4kgen" ] && [ $PLATFORM != "dm3gen" ] ; then
 	old_dreambox_situation
 fi
 exit

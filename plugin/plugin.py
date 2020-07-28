@@ -19,11 +19,12 @@ from Components.Sources.StaticText import StaticText
 from Plugins.Plugin import PluginDescriptor
 from Tools.Directories import resolveFilename, SCOPE_LANGUAGE, SCOPE_PLUGINS
 from os import environ
-from enigma import getDesktop
-try:
-    from enigma import getBoxType
-except ImportError as e:
-    from boxbranding import getBoxType
+from enigma import getDesktop, getBoxType, getBoxBrand
+from boxbranding import etMachineBuild
+
+model = getBoxType()
+brand = getBoxBrand()
+platform = getMachineBuild()
 
 lang = language.getLanguage()
 environ["LANGUAGE"] = lang[:2]
@@ -75,21 +76,21 @@ with open("/var/lib/opkg/info/enigma2-plugin-extensions-backupsuite.control") as
 			print("[BackupSuite] can't detect version!")
 
 def backupCommandHDD():
-	if getBoxType().startswith("dm"):
+	if brand == "dreambox":
 		cmd = BACKUP_DMM_HDD + ' en_EN'
 	else:
 		cmd = BACKUP_HDD + ' en_EN'
 	return cmd
 
 def backupCommandUSB():
-	if getBoxType().startswith("dm"):
+	if brand == "dreambox":
 		cmd = BACKUP_DMM_USB + ' en_EN'
 	else:
 		cmd = BACKUP_USB + ' en_EN'
 	return cmd
 
 def backupCommandMMC():
-	if getBoxType().startswith("dm"):
+	if brand == "dreambox":
 		cmd = BACKUP_DMM_MMC + ' en_EN'
 	else:
 		cmd = BACKUP_MMC + ' en_EN'
@@ -140,13 +141,13 @@ class BackupStart(Screen):
 		self.setTitle(self.setup_title)
 
 	def confirmhdd(self):
-		self.session.openWithCallback(self.backuphdd, MessageBox, _("Do you want to make an USB-back-up image on HDD? \n\nThis only takes a few minutes and is fully automatic.\n") , MessageBox.TYPE_YESNO, timeout = 20, default = True)
+		self.session.openWithCallback(self.backuphdd, MessageBox, _("Do you want to make an USB-backup image on HDD? \n\nThis only takes a few minutes and is fully automatic.\n") , MessageBox.TYPE_YESNO, timeout = 20, default = True)
 
 	def confirmusb(self):
-		self.session.openWithCallback(self.backupusb, MessageBox, _("Do you want to make a back-up on USB?\n\nThis only takes a few minutes depending on the used filesystem and is fully automatic.\n\nMake sure you first insert an USB flash drive before you select Yes.") , MessageBox.TYPE_YESNO, timeout = 20, default = True)
+		self.session.openWithCallback(self.backupusb, MessageBox, _("Do you want to make a backup on USB?\n\nThis only takes a few minutes depending on the used filesystem and is fully automatic.\n\nMake sure you first insert an USB flash drive before you select Yes.") , MessageBox.TYPE_YESNO, timeout = 20, default = True)
 
 	def confirmmmc(self):
-		self.session.openWithCallback(self.backupmmc, MessageBox, _("Do you want to make an USB-back-up image on MMC? \n\nThis only takes a few minutes and is fully automatic.\n") , MessageBox.TYPE_YESNO, timeout = 20, default = True)
+		self.session.openWithCallback(self.backupmmc, MessageBox, _("Do you want to make an USB-backup image on MMC? \n\nThis only takes a few minutes and is fully automatic.\n") , MessageBox.TYPE_YESNO, timeout = 20, default = True)
 
 	def showHelp(self):
 		from plugin import backupsuiteHelp
@@ -154,19 +155,10 @@ class BackupStart(Screen):
 			backupsuiteHelp.open(self.session)
 
 	def flashimage(self):
-		files = "^.*\.(zip|bin)"
-		model = getBoxType()
-		if model in ("vuduo","vusolo","vuultimo","vuuno") or model.startswith("ebox"):
-			files = "^.*\.(zip|bin|jffs2)"
-		elif "4k" or "uhd" in model or model in ("hd51","hd60","hd61","h7","sf4008","sf5008","sf8008","sf8008m","vs1500","et11000","et13000","multibox","multiboxplus","e4hdultra"):
-			files = "^.*\.(zip|bin|bz2)"
-		elif model in ("h9","h9combo","i55plus","h10","h0","dinobotu55","iziboxx3","dinoboth265","axashistwin","protek4kx1"):
-			files = "^.*\.(zip|bin|ubi)"
-		elif model.startswith("dm"):
-			self.session.open(MessageBox, _("No supported receiver found!"), MessageBox.TYPE_ERROR)
+		if brand == "dreambox":
+			self.session.open(MessageBox, _("We can't flash dreambox images!"), MessageBox.TYPE_ERROR)
 			return
-		else:
-			files = "^.*\.(zip|bin)"
+		files = "^.*\.(zip|bin|jffs2|bz2|ubi)"
 		curdir = '/media/'
 		self.session.open(FlashImageConfig, curdir, files)
 
@@ -184,21 +176,21 @@ class BackupStart(Screen):
 	def backuphdd(self, ret = False ):
 		if (ret == True):
 			self.writeEnigma2VersionFile()
-			text = _('Full back-up on HDD')
+			text = _('Full backup on HDD')
 			cmd = backupCommandHDD()
 			self.session.openWithCallback(self.consoleClosed,Console,text,[cmd])
 
 	def backupusb(self, ret = False ):
 		if (ret == True):
 			self.writeEnigma2VersionFile()
-			text = _('Full back-up to USB')
+			text = _('Full backup to USB')
 			cmd = backupCommandUSB()
 			self.session.openWithCallback(self.consoleClosed,Console,text,[cmd])
 
 	def backupmmc(self, ret = False ):
 		if (ret == True):
 			self.writeEnigma2VersionFile()
-			text = _('Full back-up on MMC')
+			text = _('Full backup on MMC')
 			cmd = backupCommandMMC()
 			self.session.openWithCallback(self.consoleClosed,Console,text,[cmd])
 
@@ -275,7 +267,7 @@ class FlashImageConfig(Screen):
 		pass
 
 	def dualBoot(self):
-		if getBoxType() == "et8500":
+		if model == "et8500":
 			rootfs2 = False
 			kernel2 = False
 			f = open("/proc/mtd")
@@ -291,7 +283,7 @@ class FlashImageConfig(Screen):
 		return False
 
 	def ForceMode(self):
-		if getBoxType() in ("h9","h9combo","i55plus","h10","h0"):
+		if platform in ("zgemmahisi3798mv200","zgemmahisi3716mv430"):
 			return True
 		return False
 
@@ -351,18 +343,17 @@ class FlashImageConfig(Screen):
 	def showparameterlist(self):
 		if self["key_green"].getText() == _("Run flash"):
 			dirname = self.getCurrentSelected()
-			model = getBoxType()
 			if dirname:
 				backup_files = []
 				no_backup_files = []
 				text = _("Select parameter for start flash!\n")
 				text += _('For flashing your receiver files are needed:\n')
-				if model.startswith("dm"):
-					if "dm9" in model:
+				if brand == "dreambox":
+					if platform == "dm4kgen":
 						backup_files = [("kernel.bin"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel.bin, rootfs.tar.bz2"
-					elif model in ("dm520","dm7080","dm820"):
+					elif platform == "dm3gen":
 						backup_files = [("*.xz")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel_auto.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("uImage"), ("rootfs.ubi")]
 						text += "*.xz"
@@ -370,7 +361,7 @@ class FlashImageConfig(Screen):
 						backup_files = [("*.nfi")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel_auto.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("uImage"), ("rootfs.ubi")]
 						text += "*.nfi"
-				elif model.startswith("gb"):
+				elif brand == "gigablue":
 					if not "4k" in model:
 						backup_files = [("kernel.bin"), ("rootfs.bin")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
@@ -379,12 +370,12 @@ class FlashImageConfig(Screen):
 						backup_files = [("kernel.bin"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel.bin, rootfs.tar.bz2"
-				elif model.startswith("vu"):
-					if "4k" in model:
+				elif brand == "vuplus":
+					if platform == "vu4kgen":
 						backup_files = [("kernel_auto.bin"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel_auto.bin, rootfs.tar.bz2"
-					elif model in ("vuduo2","vusolose","vusolo2","vuzero"):
+					elif platform == "vu2gen":
 						backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.bin")]
 						no_backup_files = [("rootfs.bin"), ("root_cfe_auto.jffs2"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel_cfe_auto.bin, root_cfe_auto.bin"
@@ -394,27 +385,23 @@ class FlashImageConfig(Screen):
 						text += "kernel_cfe_auto.bin, root_cfe_auto.jffs2"
 
 				else:
-					if model in ("hd51","h7","sf4008","sf5008","sf8008","sf8008m","vs1500","et11000","et13000","bre2ze4k","spycat4k","spycat4kmini","protek4k","e4hdultra","arivacombo","arivatwin","turing") or model.startswith(("anadol","axashis4","dinobot4","ferguson4","mediabox4","axashisc4")):
+					if model in ("h7","sf4008","sf5008","et1x000","et13000","spycat4k","spycat4kcombo") or platformm in ("u5pvr","u5","u51","u52","u53","u54","u56","u532","u533","8100s","gfuturesbcmarm","octagonhisil"):
 						backup_files = [("kernel.bin"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel.bin, rootfs.tar.bz2"
-					elif model in ("h9","h9combo","i55plus","h10","h0","dinobotu55","iziboxx3","dinoboth265","axashistwin","protek4kx1"):
+					elif if platform in ("zgemmahisi3798mv200","zgemmahisi3716mv430","u55","u41","u42","u43"):
 						backup_files = [("uImage"), ("rootfs.ubi")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("kernel.bin"), ("rootfs.tar.bz2")]
 						text += "uImage, rootfs.ubi"
-					elif model in ("hd60","hd61","multibox","multiboxplus"):
+					elif platform == "gfutureshisil" or brand == "maxytec":
 						backup_files = [("uImage"), ("rootfs.tar.bz2")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("rootfs.ubi"), ("kernel_auto.bin"), ("kernel.bin")]
 						text += "uImage, rootfs.tar.bz2"
-					elif model.startswith(("et4","et5","et6","et7","et8","et9","et10")):
-						backup_files = [("kernel.bin"), ("rootfs.bin")]
-						no_backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
-						text += "kernel.bin, rootfs.bin"
-					elif model.startswith("ebox"):
+					elif brand == "ebox":
 						backup_files = [("kernel_cfe_auto.bin"), ("root_cfe_auto.jffs2")]
 						no_backup_files = [("rootfs.bin"), ("root_cfe_auto.bin"), ("oe_kernel.bin"), ("oe_rootfs.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "kernel_cfe_auto.bin, root_cfe_auto.jffs2"
-					elif model.startswith(("fusion","pure","optimus","force","iqon","ios","tm2","tmn","tmt","tms","lunix","mediabox","vala")):
+					elif platform in ("dags7335","dags7356","dags7362","dags73625"):
 						backup_files = [("oe_kernel.bin"), ("oe_rootfs.bin")]
 						no_backup_files = [("kernel_cfe_auto.bin"), ("rootfs.bin"), ("root_cfe_auto.jffs2"), ("root_cfe_auto.bin"), ("kernel.bin"), ("rootfs.tar.bz2"), ("kernel_auto.bin"), ("uImage"), ("rootfs.ubi")]
 						text += "oe_kernel.bin, oe_rootfs.bin"

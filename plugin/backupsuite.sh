@@ -1,5 +1,5 @@
 #     FULL BACKUP UYILITY FOR ENIGMA2/OPENVISION, SUPPORTS VARIOUS MODELS     #
-#                   MAKES A FULLBACK-UP READY FOR FLASHING.                   #
+#                    MAKES A FULLBACKUP READY FOR FLASHING.                   #
 #                                                                             #
 ###############################################################################
 #
@@ -86,7 +86,7 @@ exit 0
 ############################ DEFINE IMAGE_VERSION #############################
 image_version()
 {
-echo "Back-up = $BACKUPDATE"
+echo "Backup = $BACKUPDATE"
 echo "Version = $IMVER"
 echo "Flashed = $FLASHED"
 echo "Updated = $LASTUPDATE"
@@ -118,7 +118,7 @@ elif [ ! -x "$1" ] ; then
 	big_fail
 fi
 }
-################### BACK-UP MADE AND REPORTING SIZE ETC. ######################
+################### BACKUP MADE AND REPORTING SIZE ETC. #######################
 backup_made()
 {
 {
@@ -182,7 +182,7 @@ log "*** THIS BACKUP IS CREATED WITH THE BACKUPSUITE PLUGIN ***"
 log "*****  https://github.com/OpenVisionE2/BackupSuite  ******"
 log $LINE
 log "Plugin version     = "`cat /var/lib/opkg/info/enigma2-plugin-extensions-backupsuite.control | grep "Version: " | cut -d "+" -f 2- | cut -d "-" -f1`
-log "Back-up media      = $MEDIA"
+log "Backup media      = $MEDIA"
 df -h "$MEDIA"  >> $LOGFILE
 log $LINE
 image_version >> $LOGFILE
@@ -203,22 +203,20 @@ else
 		log "Thanks GOD it's Open Vision"
 		SEARCH=$( cat /etc/openvision/model )
 	else
-		log "Not Open Vision, OpenPLi or SatDreamGr maybe?"	
-		if [ -f /proc/stb/info/hwmodel ] ; then
-			SEARCH=$( cat /proc/stb/info/hwmodel )
-		elif [ -f /proc/stb/info/gbmodel ] ; then
-			SEARCH=$( cat /proc/stb/info/gbmodel )
-		elif [ -f /proc/stb/info/boxtype ] ; then
-			SEARCH=$( cat /proc/stb/info/boxtype )
-		elif [ -f /proc/stb/info/vumodel ] ; then
-			SEARCH=$( cat /proc/stb/info/vumodel )
-		else
-			echo $RED
-			$SHOW "message01" 2>&1 | tee -a $LOGFILE # No supported receiver found!
-			big_fail
-		fi
+		echo $RED
+		$SHOW "message01" 2>&1 | tee -a $LOGFILE # No supported receiver found!
+		big_fail
 	fi
 fi
+
+if [ -f /etc/openvision/platfom ] ; then
+	log "Now we know the platform."
+	PLATFORM=$( cat /etc/openvision/platfom )
+else
+	log "Not Open Vision so no platform detection!"
+	PLATFORM=$SEARCH
+fi
+
 cat $LOOKUP | cut -f 2 | grep -qw "$SEARCH"
 if [ "$?" = "1" ] ; then
 	echo $RED
@@ -262,7 +260,7 @@ log $LINE
 ############# START TO SHOW SOME INFORMATION ABOUT BRAND & MODEL ##############
 echo -n $PURPLE
 echo -n "$SHOWNAME " | tr  a-z A-Z		# Shows the receiver brand and model
-$SHOW "message02"  			# BACK-UP TOOL FOR MAKING A COMPLETE BACK-UP
+$SHOW "message02"  			# BACKUP TOOL FOR MAKING A COMPLETE BACKUP
 echo $BLUE
 log "RECEIVER = $SHOWNAME "
 log "MKUBIFS_ARGS = $MKUBIFS_ARGS"
@@ -328,8 +326,8 @@ mount --bind / /tmp/bi/root # the complete root at /tmp/bi/root
 if [ -d /tmp/bi/root/var/lib/samba/private/msg.sock ] ; then
 	rm -rf /tmp/bi/root/var/lib/samba/private/msg.sock
 fi
-####################### START THE REAL BACK-UP PROCESS ########################
-############################# MAKING UBINIZE.CFG ##############################
+####################### START THE REAL BACKUP PROCESS ########################
+############################# MAKING UBINIZE.CFG #############################
 if [ $ROOTNAME != "rootfs.tar.bz2" ] ; then
 	echo \[ubifs\] > "$WORKDIR/ubinize.cfg"
 	echo mode=ubi >> "$WORKDIR/ubinize.cfg"
@@ -348,7 +346,7 @@ fi
 ############################## MAKING KERNELDUMP ##############################
 log $LINE
 $SHOW "message07" 2>&1 | tee -a $LOGFILE			# Create: kerneldump
-if [ $ROOTNAME != "rootfs.tar.bz2" -o $SEARCH = "h9" -o $SEARCH = "h9combo" -o $SEARCH = "i55plus" -o $SEARCH = "h10" -o $SEARCH = "h0" ] ; then
+if [ $ROOTNAME != "rootfs.tar.bz2" -o $PLATFORM = "zgemmahisi3798mv200" -o $PLATFORM = "zgemmahisi3716mv430" ] ; then
 	log "Kernel resides on $MTDPLACE" 					# Just for testing purposes
 	$NANDDUMP /dev/$MTDPLACE -qf "$WORKDIR/$KERNELNAME"
 	if [ -f "$WORKDIR/$KERNELNAME" ] ; then
@@ -360,25 +358,25 @@ if [ $ROOTNAME != "rootfs.tar.bz2" -o $SEARCH = "h9" -o $SEARCH = "h9combo" -o $
 	fi
 	log "--------------------------"
 else
-	if [ $SEARCH = "solo4k" -o $SEARCH = "vusolo4k" -o $SEARCH = "ultimo4k" -o $SEARCH = "vuultimo4k" -o $SEARCH = "uno4k" -o $SEARCH = "vuuno4k" -o $SEARCH = "uno4kse" -o $SEARCH = "vuuno4kse" -o $SEARCH = "lunix3-4k" -o $SEARCH = "lunix34k" -o $SEARCH = "lunix4k" ] ; then
+	if [ $SEARCH = "vusolo4k" -o $SEARCH = "vuultimo4k" -o $SEARCH = "vuuno4k" -o $SEARCH = "vuuno4kse" -o $SEARCH = "lunix34k" -o $SEARCH = "lunix4k" ] ; then
 		dd if=/dev/mmcblk0p1 of=$WORKDIR/$KERNELNAME
 		log "Kernel resides on /dev/mmcblk0p1"
 	elif [ $SEARCH = "h7" ] ; then
 		dd if=/dev/mmcblk0p2 of=$WORKDIR/$KERNELNAME
 		log "Kernel resides on /dev/mmcblk0p2"
-	elif [ $SEARCH = "sf4008" -o $SEARCH = "et11000" ] ; then
+	elif [ $SEARCH = "sf4008" -o $SEARCH = "et1x000" ] ; then
 		dd if=/dev/mmcblk0p3 of=$WORKDIR/$KERNELNAME
 		log "Kernel resides on /dev/mmcblk0p3"
-	elif [ $SEARCH = "zero4k" -o $SEARCH = "vuzero4k" -o $SEARCH = "gbquad4k" -o $SEARCH = "gbue4k" -o $SEARCH = "gbx34k" ] ; then
+	elif [ $SEARCH = "vuzero4k" -o $PLATFORM = "gb7252" -o $SEARCH = "gbx34k" ] ; then
 		dd if=/dev/mmcblk0p4 of=$WORKDIR/$KERNELNAME
 		log "Kernel resides on /dev/mmcblk0p4"
-	elif [ $SEARCH = "duo4k" -o $SEARCH = "vuduo4k" ] ; then
+	elif [ $SEARCH = "vuduo4k" ] ; then
 		dd if=/dev/mmcblk0p6 of=$WORKDIR/$KERNELNAME
 		log "Kernel resides on /dev/mmcblk0p6"
-	elif [ $SEARCH = "sf8008" -o $SEARCH = "sf8008m" -o $SEARCH = "ustym4kpro" -o $SEARCH = "gbtrio4k" -o $SEARCH = "gbip4k" -o $SEARCH = "viper4k" -o $SEARCH = "beyonwizv2" ] ; then
+	elif [ $PLATFORM = "octagonhisil" -o $SEARCH = "ustym4kpro" -o $PLATFORM = "gbmv200" -o $SEARCH = "viper4k" -o $SEARCH = "beyonwizv2" ] ; then
 		dd if=/dev/mmcblk0p12 of=$WORKDIR/$KERNELNAME
 		log "Kernel resides on /dev/mmcblk0p12"
-	elif [ $SEARCH = "hd60" -o $SEARCH = "hd61" ] ; then
+	elif [ $PLATFORM = "gfutureshisil" ] ; then
 		$LIBDIR/enigma2/python/Plugins/Extensions/BackupSuite/findkerneldevice.sh
 		KERNEL=`readlink -n /dev/kernel`
 		log "Kernel resides on $KERNEL"
@@ -442,8 +440,8 @@ elif [ $ACTION = "force" ] ; then
 	echo "Rename the file in the folder /vuplus/$SEARCH/noforce.update to /vuplus/$SEARCH/force.update to flash this image"
 fi
 image_version > "$MAINDEST/imageversion"
-if [ $SEARCH = "h9" -o $SEARCH = "h9combo" -o $SEARCH = "i55plus" -o $SEARCH = "h10" -o $SEARCH = "h0" ] ; then
-	log "Zgemma hisil-3798mv200 found, we need to copy more files for flashing later!"
+if [ $PLATFORM = "zgemmahisi3798mv200" -o $PLATFORM = "zgemmahisi3716mv430" ] ; then
+	log "Zgemma HiSilicon found, we need to copy more files for flashing later!"
 	dd if=/dev/mtd0 of=$MAINDEST/fastboot.bin > /dev/null 2>&1
 	dd if=/dev/mtd1 of=$MAINDEST/bootargs.bin > /dev/null 2>&1
 	cp -r "$MAINDEST/fastboot.bin" "$MEDIA/zgemma/fastboot.bin" > /dev/null 2>&1
@@ -454,7 +452,7 @@ fi
 if  [ $HARDDISK != 1 ]; then
 	mkdir -p "$EXTRA"
 	echo "Created directory  = $EXTRA" >> $LOGFILE
-	cp -r "$MAINDEST" "$EXTRA" 	#copy the made back-up to images
+	cp -r "$MAINDEST" "$EXTRA" 	#copy the made backup to images
 fi
 if [ -f "$MAINDEST/$ROOTNAME" -a -f "$MAINDEST/$KERNELNAME" ] ; then
 		backup_made
