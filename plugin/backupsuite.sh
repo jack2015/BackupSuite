@@ -209,7 +209,7 @@ else
 		elif [ -f /proc/stb/info/gbmodel ] ; then
 			SEARCH=$( cat /proc/stb/info/gbmodel )
 		elif [ -f /proc/stb/info/boxtype ] ; then
-			SEARCH=$( cat /proc/stb/info/boxtype )
+			SEARCH=$( cat /proc/stb/info/boxtype | tr "A-Z" "a-z" )
 		elif [ -f /proc/stb/info/vumodel ] ; then
 			SEARCH=$( cat /proc/stb/info/vumodel )
 		else
